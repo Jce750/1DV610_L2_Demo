@@ -101,7 +101,6 @@ customElements.define('x-tictactoe',
      */
     connectedCallback () {
       const gameboardTitle = this.shadowRoot.querySelector('h3')
-      console.log('Log from x-tictactoe.js')
       this.#createBoard()
       gameboardTitle.innerText = 'Tic Tac Toe'
     }
@@ -112,10 +111,8 @@ customElements.define('x-tictactoe',
      */
     #createBoard () {
       this.#gameboard = new GameBoard(5, 5)
-
-      this.#gameboard.test('Hello from Gameboard')
       this.#gameboard.updateCellWidthHeight(30, 30)
-      this.#gameboard.addclickEventToCells(this.#gameboard.cellElements, this.boundHandleClick)
+      this.#gameboard.addClickEventToCells(this.#gameboard.allCells, this.boundHandleClick)
       this.#gameboardElement.appendChild(this.#gameboard.element) // Stupid naming TODO
     }
 
@@ -131,9 +128,6 @@ customElements.define('x-tictactoe',
         return
       }
       this.#clickCounter++
-      const currentCol = currentCell.getAttribute('data-col')
-      const currentRow = currentCell.getAttribute('data-row')
-      console.log(`You clicked ${currentCol}, ${currentRow}`)
       if (currentCell.innerText !== '') {
         return
       }

@@ -16,7 +16,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "matrixanalysislibrary": "../../L1_MatrixAnalysisLibrary",
+    "matrixanalysislibrary": "file:./../L1_MatrixAnalysisLibrary",
     "@lnu/eslint-config": "^1.1.10",
     "vite": "^4.4.9"
   }

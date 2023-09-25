@@ -3,6 +3,9 @@ The game will be built as a javascript-component embedded in a htmlpage.
 It is built for development environment only
 It should be run on local computer
 
+Installation:
+- install dependencies by typing 'npm install' in the vsc terminal
+
 Start:
 - Start by typing 'npm run dev' in the vsc terminal
 - start by hovering src/index.html right-click and select 'open with live server'
