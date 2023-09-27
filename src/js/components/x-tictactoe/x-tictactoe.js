@@ -110,8 +110,8 @@ customElements.define('x-tictactoe',
      *
      */
     #createBoard () {
-      this.#gameboard = new GameBoard(5, 5)
-      this.#gameboard.updateCellWidthHeight(30, 30)
+      this.#gameboard = new GameBoard(10, 10)
+      this.#gameboard.updateCellWidthHeight(-1, 30)
       this.#gameboard.addClickEventToCells(this.#gameboard.allCells, this.boundHandleClick)
       this.#gameboardElement.appendChild(this.#gameboard.element) // Stupid naming TODO
     }
