@@ -17,6 +17,11 @@ It should be run on a local computer
   The main implementation in the demo can be found in:
   /src/js/components/x-tictactoe/tictactoe.js
 
+#### Look inside
+
+- #createBoard ()
+- #evaluateGame (currentCell)
+
 ### Library
 
   [https://github.com/Jce750/1DV610_L2_Demo](https://github.com/Jce750/1DV610_L2).

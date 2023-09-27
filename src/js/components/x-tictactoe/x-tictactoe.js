@@ -112,7 +112,7 @@ customElements.define('x-tictactoe',
     #createBoard () {
       this.#gameboard = new GameBoard(10, 10)
       this.#gameboard.updateCellWidthHeight(-1, 30)
-      this.#gameboard.addClickEventToCells(this.#gameboard.allCells, this.boundHandleClick)
+      this.#gameboard.addClickEventToCells(this.#gameboard.getAllPositionsOnBoardAsArray, this.boundHandleClick)
       this.#gameboardElement.appendChild(this.#gameboard.element) // Stupid naming TODO
     }
 
@@ -162,7 +162,7 @@ customElements.define('x-tictactoe',
      * Update the clicked cell.
      *
      * @param {*} currentCell - The clicked cell.
-     * @param {*} signature - The signature of the player.
+     * @param {String} signature - The signature of the player.
      */
     #updateClickedCell (currentCell, signature) {
       currentCell.classList.add('pressed')
