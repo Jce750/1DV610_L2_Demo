@@ -111,8 +111,9 @@ customElements.define('x-tictactoe',
      */
     #createBoard () {
       this.#gameboard = new GameBoard(10, 10)
-      this.#gameboard.updateCellWidthHeight(-1, 30)
-      this.#gameboard.addClickEventToCells(this.#gameboard.getAllPositionsOnBoardAsArray, this.boundHandleClick)
+      this.#gameboard.updateCellWidthHeight(30, 30)
+      const allPositions = this.#gameboard.getAllPositionsOnBoardAsArray()
+      this.#gameboard.addClickEventToCells(allPositions, this.boundHandleClick)
       this.#gameboardElement.appendChild(this.#gameboard.element) // Stupid naming TODO
     }
 
@@ -138,7 +139,7 @@ customElements.define('x-tictactoe',
     /**
      * Check if the cell is empty.
      *
-     * @param {*} cell cell
+     * @param {HTMLElement} cell cell
      * @returns {boolean} - True if the cell is empty.
      */
     #isCellEmpty (cell) {
@@ -148,7 +149,7 @@ customElements.define('x-tictactoe',
     /**
      * Assign a value to the cell.
      *
-     * @param {*} currentCell - The clicked cell.
+     * @param {HTMLElement} currentCell - The clicked cell.
      */
     #togglePlayer (currentCell) {
       if (this.#clickCounter % 2 === 0) {
@@ -161,7 +162,7 @@ customElements.define('x-tictactoe',
     /**
      * Update the clicked cell.
      *
-     * @param {*} currentCell - The clicked cell.
+     * @param {HTMLElement} currentCell - The clicked cell.
      * @param {String} signature - The signature of the player.
      */
     #updateClickedCell (currentCell, signature) {
@@ -172,11 +173,11 @@ customElements.define('x-tictactoe',
     /**
      * Evaluate the game.
      *
-     * @param {*} currentCell - The clicked cell.
+     * @param {HTMLElement} currentCell - The clicked cell.
      */
     #evaluateGame (currentCell) {
       const alignedSignatures = this.#gameboard
-        .getLongestCellLineOfValueMatchIntersectingCell(currentCell)
+        .getLongestCellElementLineOfValueMatchIntersectingCell(currentCell)
       const isWinner = alignedSignatures.length >= this.#alignedToWin
       const isDraw = this.#isNoCellsLeft() && !isWinner
       if (isWinner) {
