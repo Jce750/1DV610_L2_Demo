@@ -7,7 +7,8 @@
 
 // Show a header with a personal icon and name.
 
-import { GameBoard } from './../../../../node_modules/matrixanalysislibrary/dist/GameBoard.js'
+import { WrapperGameBoardLibrary } from './WrapperGameBoardLibrary.js'
+import { Default } from './default.js'
 
 const template = document.createElement('template')
 template.innerHTML = `
@@ -74,25 +75,33 @@ customElements.define('x-tictactoe',
    * @type {HTMLTemplateElement} template
    */
   class extends HTMLElement {
-    #gameboardElement
-    #gameboard
+    #gameBoardElement
+    #gameBoardLibrary
     #clickCounter
     #sideSize
     #squareSize
     #alignedToWin
+
     /**
-     * Creates an instance of the component.
+     * Creates an instance of the class.
      */
     constructor () {
       super()
       this.attachShadow({ mode: 'open' })
         .appendChild(template.content.cloneNode(true))
-      this.#gameboardElement = this.shadowRoot.querySelector('.gameboard')
       this.boundHandleClick = this.handleClick.bind(this)
+      this.#initialize()
+      this.#gameBoardLibrary = new WrapperGameBoardLibrary()
+    }
+
+    /**
+     * Initialize the game.
+     */
+    #initialize () {
       this.#clickCounter = 0
-      this.#sideSize = 15
-      this.#alignedToWin = 5
-      this.#squareSize = 40
+      this.#sideSize = Default.SIDE_SIZE
+      this.#alignedToWin = Default.ALIGNED_TO_WIN
+      this.#squareSize = Default.SQUARE_SIZE
     }
 
     /**
@@ -101,20 +110,34 @@ customElements.define('x-tictactoe',
      */
     connectedCallback () {
       const gameboardTitle = this.shadowRoot.querySelector('h3')
-      this.#createBoard()
-      gameboardTitle.innerText = 'Tic Tac Toe'
+      this.#createGameBoard()
+      gameboardTitle.innerText = Default.TITLE
     }
 
     /**
      * Create the game board.
-     *
      */
-    #createBoard () {
-      this.#gameboard = new GameBoard(10, 10)
-      this.#gameboard.updateCellWidthHeight(30, 30)
-      const allPositions = this.#gameboard.getAllPositionsOnBoardAsArray()
-      this.#gameboard.addClickEventToCells(allPositions, this.boundHandleClick)
-      this.#gameboardElement.appendChild(this.#gameboard.element) // Stupid naming TODO
+    #createGameBoard () {
+      const gameBoardDiv = this.shadowRoot.querySelector('.gameboard')
+      this.#gameBoardElement = this.#gameBoardLibrary.createGameBoardHtmlElementByRowsColumns(this.#sideSize, this.#sideSize)
+      this.#addClickEventToAllCells(this.#gameBoardElement)
+      this.#addGameBoardToDom(gameBoardDiv)
+    }
+
+    /**
+     * Add click event to all cells.
+     */
+    #addClickEventToAllCells () {
+      this.#gameBoardLibrary.addClickEventToAllCells(this.boundHandleClick, this.#gameBoardElement)
+    }
+
+    /**
+     * Add the game board to the DOM.
+     *
+     * @param {HTMLElement} gameBoardDiv - The game board div.
+     */
+    #addGameBoardToDom (gameBoardDiv) {
+      gameBoardDiv.appendChild(this.#gameBoardElement)
     }
 
     /**
@@ -128,12 +151,19 @@ customElements.define('x-tictactoe',
       if (!this.#isCellEmpty(event.target)) {
         return
       }
-      this.#clickCounter++
+      this.#advanceClickCounter()
       if (currentCell.innerText !== '') {
         return
       }
       this.#togglePlayer(currentCell)
       this.#evaluateGame(currentCell)
+    }
+
+    /**
+     * Advance the click counter by 1.
+     */
+    #advanceClickCounter () {
+      this.#clickCounter++
     }
 
     /**
@@ -163,7 +193,7 @@ customElements.define('x-tictactoe',
      * Update the clicked cell.
      *
      * @param {HTMLElement} currentCell - The clicked cell.
-     * @param {String} signature - The signature of the player.
+     * @param {string} signature - The signature of the player.
      */
     #updateClickedCell (currentCell, signature) {
       currentCell.classList.add('pressed')
@@ -176,12 +206,11 @@ customElements.define('x-tictactoe',
      * @param {HTMLElement} currentCell - The clicked cell.
      */
     #evaluateGame (currentCell) {
-      const alignedSignatures = this.#gameboard
-        .getLongestCellElementLineOfValueMatchIntersectingCell(currentCell)
-      const isWinner = alignedSignatures.length >= this.#alignedToWin
+      const alignedCells = this.#gameBoardLibrary.getLongestCellElementLineOfValueMatchIntersectingCell(currentCell, this.#gameBoardElement)
+      const isWinner = alignedCells.length >= this.#alignedToWin
       const isDraw = this.#isNoCellsLeft() && !isWinner
       if (isWinner) {
-        this.#finishGame(currentCell, alignedSignatures)
+        this.#finishGame(currentCell, alignedCells)
       }
       if (isDraw) {
         this.#finishGame(currentCell)
@@ -189,12 +218,13 @@ customElements.define('x-tictactoe',
     }
 
     /**
-     * Check if there are no cells left.
+     * Check if there are no cells left on the board to click.
      *
      * @returns {boolean} - True if there are no cells left.
      */
     #isNoCellsLeft () {
-      return this.#clickCounter >= this.#gameboard.size.rows * this.#gameboard.size.columns
+      const size = this.#gameBoardLibrary.getGameBoardSize(this.#gameBoardElement)
+      return this.#clickCounter >= size.rows * size.columns
     }
 
     /**
@@ -221,7 +251,7 @@ customElements.define('x-tictactoe',
      * @returns {boolean} - True if the game board was frozen.
      */
     #freezeGameBoard () {
-      const cells = this.#gameboardElement.querySelectorAll('.cell')
+      const cells = this.#gameBoardElement.querySelectorAll('.cell')
       cells.forEach(cell => {
         cell.removeEventListener('click', this.boundHandleClick)
       })
@@ -231,11 +261,11 @@ customElements.define('x-tictactoe',
     /**
      * Highlight the winning squares.
      *
-     * @param {*} neighbors - The winning squares.
+     * @param {*} htmlCells - The winning squares.
      */
-    #highlightWinningSquares (neighbors) {
-      neighbors.forEach(neighbor => {
-        neighbor.classList.add('shine')
+    #highlightWinningSquares (htmlCells) {
+      htmlCells.forEach(cell => {
+        cell.classList.add('shine')
       })
     }
 
@@ -247,7 +277,7 @@ customElements.define('x-tictactoe',
     #showMessage (message) {
       const winnerMessage = document.createElement('h3')
       winnerMessage.innerText = message
-      this.#gameboardElement.appendChild(winnerMessage)
+      this.#gameBoardElement.appendChild(winnerMessage)
     }
 
     /**
@@ -258,7 +288,7 @@ customElements.define('x-tictactoe',
       const playAgain = document.createElement('button')
       playAgain.innerText = 'Play again'
       playAgain.addEventListener('click', this.#resetGame.bind(this))
-      this.#gameboardElement.appendChild(playAgain)
+      this.#gameBoardElement.appendChild(playAgain)
     }
 
     /**
@@ -266,9 +296,9 @@ customElements.define('x-tictactoe',
      *
      */
     #resetGame () {
-      this.#gameboardElement.innerHTML = ''
+      this.#gameBoardElement.innerHTML = ''
       this.#clickCounter = 0
-      this.#createBoard()
+      this.#createGameBoard()
     }
 
     /**
