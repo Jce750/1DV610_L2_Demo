@@ -9,6 +9,7 @@
 
 import { WrapperGameBoardLibrary } from './WrapperGameBoardLibrary.js'
 import { Default } from './default.js'
+import { Player } from './player.js'
 
 const template = document.createElement('template')
 template.innerHTML = `
@@ -63,6 +64,7 @@ template.innerHTML = `
   </style>
   <div id="gamearea">
     <h3>Tic Tac Toe</h3>
+    <p id="playerOnTurn">Next move: Player X</p>
     <div class="gameboard">
     </div>
   </div>
@@ -81,6 +83,8 @@ customElements.define('x-tictactoe',
     #sideSize
     #squareSize
     #alignedToWin
+    #player1
+    #player2
 
     /**
      * Creates an instance of the class.
@@ -92,11 +96,10 @@ customElements.define('x-tictactoe',
       this.boundHandleClick = this.handleClick.bind(this)
       this.#initialize()
       this.#gameBoardLibrary = new WrapperGameBoardLibrary()
+      this.#player1 = new Player('X', this.shadowRoot)
+      this.#player2 = new Player('O', this.shadowRoot)
     }
 
-    /**
-     * Initialize the game.
-     */
     #initialize () {
       this.#clickCounter = 0
       this.#sideSize = Default.SIDE_SIZE
@@ -105,7 +108,7 @@ customElements.define('x-tictactoe',
     }
 
     /**
-     * Called after the element is inserted into the DOM.
+     * Called after the main element is inserted into the DOM.
      *
      */
     connectedCallback () {
@@ -114,28 +117,21 @@ customElements.define('x-tictactoe',
       gameboardTitle.innerText = Default.TITLE
     }
 
-    /**
-     * Create the game board.
-     */
     #createGameBoard () {
-      const gameBoardDiv = this.shadowRoot.querySelector('.gameboard')
-      this.#gameBoardElement = this.#gameBoardLibrary.createGameBoardHtmlElementByRowsColumns(this.#sideSize, this.#sideSize)
-      this.#addClickEventToAllCells(this.#gameBoardElement)
-      this.#addGameBoardToDom(gameBoardDiv)
+      try {
+        const gameBoardDiv = this.shadowRoot.querySelector('.gameboard')
+        this.#gameBoardElement = this.#gameBoardLibrary.createGameBoardHtmlElementByRowsColumns(this.#sideSize, this.#sideSize)
+        this.#addClickEventToAllCells(this.#gameBoardElement)
+        this.#addGameBoardToDom(gameBoardDiv)
+      } catch (error) {
+        console.log(error)
+      }
     }
 
-    /**
-     * Add click event to all cells.
-     */
     #addClickEventToAllCells () {
       this.#gameBoardLibrary.addClickEventToAllCells(this.boundHandleClick, this.#gameBoardElement)
     }
 
-    /**
-     * Add the game board to the DOM.
-     *
-     * @param {HTMLElement} gameBoardDiv - The game board div.
-     */
     #addGameBoardToDom (gameBoardDiv) {
       gameBoardDiv.appendChild(this.#gameBoardElement)
     }
@@ -143,61 +139,44 @@ customElements.define('x-tictactoe',
     /**
      * Handle click on a square.
      *
-     * @param {*} event - The click event.
+     * @param {*} event - contains the target element cell
      */
     handleClick (event) {
       event.preventDefault()
       const currentCell = event.target
-      if (!this.#isCellEmpty(event.target)) {
-        return
+      if (this.#isCellEmpty(currentCell)) {
+        this.#executeRound(currentCell)
       }
+    }
+
+    #isCellEmpty(cell) {
+      return cell.innerText === ''
+    }
+
+    #getCurrentPlayer () {
+      return (this.#clickCounter % 2 === 0) ? this.#player1 : this.#player2
+    }
+
+    #executeRound(currentCell) {
+      const currentPlayer = this.#getCurrentPlayer()
+      currentPlayer.makeMove(currentCell)
       this.#advanceClickCounter()
-      if (currentCell.innerText !== '') {
-        return
-      }
-      this.#togglePlayer(currentCell)
+      this.#showPlayerOnTurn()
       this.#evaluateGame(currentCell)
     }
 
-    /**
-     * Advance the click counter by 1.
-     */
     #advanceClickCounter () {
       this.#clickCounter++
     }
 
-    /**
-     * Check if the cell is empty.
-     *
-     * @param {HTMLElement} cell cell
-     * @returns {boolean} - True if the cell is empty.
-     */
-    #isCellEmpty (cell) {
-      return cell.innerText === ''
-    }
-
-    /**
-     * Assign a value to the cell.
-     *
-     * @param {HTMLElement} currentCell - The clicked cell.
-     */
-    #togglePlayer (currentCell) {
+    #showPlayerOnTurn () {
+      let nextPlayer
       if (this.#clickCounter % 2 === 0) {
-        this.#updateClickedCell(currentCell, 'O')
+        nextPlayer = this.#player1
       } else {
-        this.#updateClickedCell(currentCell, 'X')
+        nextPlayer = this.#player2
       }
-    }
-
-    /**
-     * Update the clicked cell.
-     *
-     * @param {HTMLElement} currentCell - The clicked cell.
-     * @param {string} signature - The signature of the player.
-     */
-    #updateClickedCell (currentCell, signature) {
-      currentCell.classList.add('pressed')
-      currentCell.innerText = signature
+      nextPlayer.showTurn()
     }
 
     /**
@@ -227,14 +206,9 @@ customElements.define('x-tictactoe',
       return this.#clickCounter >= size.rows * size.columns
     }
 
-    /**
-     * Finish the game.
-     *
-     * @param {*} currentCell - The clicked cell.
-     * @param {*} alignedSignatures - The winning squares.
-     */
     #finishGame (currentCell, alignedSignatures) {
       this.#freezeGameBoard()
+      this.#hidePlayerOnTurnMessage()
       if (alignedSignatures) {
         this.#showMessage(`Winner: ${currentCell.innerText}`)
         this.#highlightWinningSquares(alignedSignatures)
@@ -245,7 +219,6 @@ customElements.define('x-tictactoe',
     }
 
     /**
-     * Freeze the game board.
      * Remove the click event listener from all squares.
      *
      * @returns {boolean} - True if the game board was frozen.
@@ -258,32 +231,23 @@ customElements.define('x-tictactoe',
       return this
     }
 
-    /**
-     * Highlight the winning squares.
-     *
-     * @param {*} htmlCells - The winning squares.
-     */
-    #highlightWinningSquares (htmlCells) {
-      htmlCells.forEach(cell => {
-        cell.classList.add('shine')
-      })
+    #hidePlayerOnTurnMessage () {
+      const playerOnTurn = this.shadowRoot.querySelector('#playerOnTurn')
+      playerOnTurn.innerText = ''
     }
 
-    /**
-     * Show a message to the winner.
-     *
-     * @param {*} message - The message to show.
-     */
     #showMessage (message) {
       const winnerMessage = document.createElement('h3')
       winnerMessage.innerText = message
       this.#gameBoardElement.appendChild(winnerMessage)
     }
 
-    /**
-     * Show option to play again.
-     *
-     */
+    #highlightWinningSquares (htmlCells) {
+      htmlCells.forEach(cell => {
+        cell.classList.add('shine')
+      })
+    }
+
     #showPlayAgain () {
       const playAgain = document.createElement('button')
       playAgain.innerText = 'Play again'
@@ -291,19 +255,11 @@ customElements.define('x-tictactoe',
       this.#gameBoardElement.appendChild(playAgain)
     }
 
-    /**
-     * Reset the game.
-     *
-     */
     #resetGame () {
-      this.#gameBoardElement.innerHTML = ''
+      this.#gameBoardElement.remove()
       this.#clickCounter = 0
       this.#createGameBoard()
+      this.#player1.showTurn()
     }
-
-    /**
-     * Called after the element has been removed from the DOM.
-     */
-    attributeChangedCallback () {}
   }
 )

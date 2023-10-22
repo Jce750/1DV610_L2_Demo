@@ -1,4 +1,3 @@
-import { Point2D } from 'matrixanalysislibrary/Point2D'
 import { IMatrix2DFacade } from 'matrixanalysislibrary/IMatrix2DFacade'
 import { IHtmlGameBoardFacade } from 'matrixanalysislibrary/IHtmlGameBoardFacade'
 
@@ -21,7 +20,7 @@ export class WrapperGameBoardLibrary {
 
   /**
    * This will create a new game-board by using the matrixanalysislibrary.
-   * Argument is a anonymous object with the properties rows and columns.
+   * Argument is an anonymous object with the properties rows and columns.
    *
    * @param {rows} rows rows
    * @returns {object} A new game-board
@@ -41,7 +40,6 @@ export class WrapperGameBoardLibrary {
    */
   createGameBoardHtmlElementByRowsColumns (rows, columns) {
     return this.IHtmlGameBoardFacade.createGameBoardHtml({ rows, columns }, { width: 50, height: 50 })
-    // return this.gameBoardHtmlFactory.createGameBoardHtmlElementByRowsColumns(rows, columns)
   }
 
   /**
@@ -71,7 +69,7 @@ export class WrapperGameBoardLibrary {
    *
    * @param {HTMLElement} currentCellHtmlElement The current cell.
    * @param {HTMLElement} gameBoardHtmlElement The game-board html element.
-   * @returns {Array} An array of Point2D-objects.
+   * @returns {Array} An array of Html-cell-objects.
    */
   getLongestCellElementLineOfValueMatchIntersectingCell (currentCellHtmlElement, gameBoardHtmlElement) {
     return this.IHtmlGameBoardFacade.getLongestCellElementLineOfValueMatchIntersectingCell(currentCellHtmlElement, gameBoardHtmlElement)
@@ -88,16 +86,5 @@ export class WrapperGameBoardLibrary {
   getGameBoardSize (gameBoardHtmlElement) {
     const size = this.IHtmlGameBoardFacade.getGameBoardSize(gameBoardHtmlElement)
     return { rows: size.rows, columns: size.columns }
-  }
-
-  /**
-   * Get the cell html element at the specified point.
-   *
-   * @param {Point2D} point The point.
-   * @param {HTMLElement} gameBoardHtmlElement The game-board html element.
-   * @returns {HTMLElement} The cell html element.
-   */
-  getHtmlCellAtPoint (point, gameBoardHtmlElement) {
-    return this.IHtmlGameBoardFacade.getCellHtmlElementAtPoint(point, gameBoardHtmlElement)
   }
 }

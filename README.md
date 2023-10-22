@@ -2,7 +2,7 @@
 
 ## Objectives
 
-This project aim to demonstrate the use of the Game-Board Library by presenting a tic-tac-toe-game component using the library. The game can be played in a browser.
+This project aim to demonstrate the use of the Game-Board Library (called "matrixanalysislibrary" in node-modules) by presenting a tic-tac-toe-game component using the library. The game can be played in a browser.
 
 The game is built as a javascript-component embedded in a html-page.
 It is built for development environment only
@@ -12,7 +12,7 @@ It should be run on a local computer
 
 ### demo-app
 
-  [https://github.com/Jce750/1DV610_L2_Demo](https://github.com/Jce750/1DV610_L2_Demo).
+  [https://github.com/Jce750/1DV610_L2_Demo](https://github.com/Jce750/1DV610_L2_Demo/tree/L3).
 
   The main implementation in the demo can be found in:
   /src/js/components/x-tictactoe/tictactoe.js
@@ -24,7 +24,7 @@ It should be run on a local computer
 
 ### Library
 
-  [https://github.com/Jce750/1DV610_L2_Demo](https://github.com/Jce750/1DV610_L2).
+  [https://github.com/Jce750/1DV610_L2_Demo](https://github.com/Jce750/1DV610_L2/tree/L3).
 
 ## Installation
 
@@ -68,9 +68,23 @@ then to install dependencies run:
 npm install
 ```
 
+#### Wrapper class
+
+To narrow the exposure to the vast flora of functionalities available in the Game-board library a wrapper class is used.
+/src/js/components/x-tictactoe/WrapperGameBoardLibrary.js
+
+#### Default settings
+
+Default behavior can be set in this file:
+/src/js/components/x-tictactoe/default.js
+
 #### Start
 
-Alternative routes:
-
 - Start by typing 'npm run dev' in the vsc terminal
-- start by hovering src/index.html right-click and select 'open with live server'
+
+## Game Play
+
+The game consist of a game-board with cells arranged as matrix with rows and columns.
+Two players take turn to place their respective signature in a cell of their choice.
+The objective is to be the first to manage to place 5 (default setting) aligned signatures on the board. Either horisontal, vertically or diagonally. An indirect goal is to prevent the opponent from winning by blocking using your own signature.
+Use mouse to click a cell on the gameboard to set your signature.
